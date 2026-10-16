@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, KeyRound, AlertCircle, Shield } from 'lucide-react';
-import { NeonButton } from '../ui';
+import { Lock, Mail, KeyRound, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Button } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 
-/**
- * LoginGate — Full-screen authentication wall for the admin dashboard.
- * Shows a glassmorphic login card with email/password fields.
- * On success, the parent component grants access.
- */
 export default function LoginGate() {
   const { login, loading, error } = useAuth();
   const [email, setEmail] = useState('');
@@ -21,132 +16,121 @@ export default function LoginGate() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[75vh]">
+    <div className="flex items-center justify-center min-h-[65vh] px-4">
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="w-full max-w-md relative"
       >
-        {/* Card */}
+        {/* Soft Ambient Glow behind Login Card */}
         <div
-          className="rounded-3xl p-8 sm:p-10"
+          className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-teal-brand/12 via-secondary-blue/10 to-teal-brand/12 blur-xl -z-10 opacity-70"
+          aria-hidden="true"
+        />
+
+        <div
+          className="bg-surface-card border border-border-main rounded-2xl p-7 sm:p-9 transition-colors duration-200 relative z-10"
           style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(5, 5, 5, 0.85))',
-            backdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
+            boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)',
           }}
         >
           {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-              className="inline-flex mb-4"
-            >
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(168, 85, 247, 0.08))',
-                  border: '1px solid rgba(0, 240, 255, 0.2)',
-                  boxShadow: '0 0 25px rgba(0, 240, 255, 0.12)',
-                }}
-              >
-                <Shield size={28} className="text-neon-cyan" />
-              </div>
-            </motion.div>
+          <div className="text-center mb-6">
+            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-surface-teal-subtle to-surface-blue-subtle text-teal-brand border border-teal-brand/25 flex items-center justify-center mx-auto mb-3.5 shadow-sm">
+              <ShieldCheck size={26} strokeWidth={2.3} />
+            </div>
 
-            <h2 className="text-2xl font-extrabold gradient-text-cyan mb-1">
-              Admin Access
+            <h2 className="text-xl font-bold text-content-main tracking-tight">
+              Registrar Portal Access
             </h2>
-            <p className="text-sm text-white/30">
-              University registrar credentials required
+            <p className="text-xs text-content-secondary mt-1">
+              Authorized university administrators only
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             {/* Email */}
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-                <Mail size={16} className="text-white/20" />
+            <div>
+              <label
+                htmlFor="login-email"
+                className="block text-xs font-bold uppercase tracking-wider text-content-main mb-1.5"
+              >
+                Administrative Email
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-teal-brand transition-colors pointer-events-none">
+                  <Mail size={16} />
+                </div>
+                <input
+                  id="login-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="registrar@university.edu"
+                  required
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm
+                    bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70
+                    focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+                    disabled:opacity-50 transition-all duration-150 outline-none shadow-xs"
+                />
               </div>
-              <input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@university.edu"
-                required
-                disabled={loading}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm
-                  text-white placeholder-white/20 outline-none
-                  transition-all duration-300
-                  focus:border-neon-cyan/50
-                  disabled:opacity-50"
-                style={{
-                  background: 'rgba(5, 5, 5, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                }}
-              />
             </div>
 
             {/* Password */}
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-                <KeyRound size={16} className="text-white/20" />
+            <div>
+              <label
+                htmlFor="login-password"
+                className="block text-xs font-bold uppercase tracking-wider text-content-main mb-1.5"
+              >
+                Password
+              </label>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-teal-brand transition-colors pointer-events-none">
+                  <KeyRound size={16} />
+                </div>
+                <input
+                  id="login-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter administrator password"
+                  required
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm
+                    bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70
+                    focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+                    disabled:opacity-50 transition-all duration-150 outline-none shadow-xs"
+                />
               </div>
-              <input
-                id="login-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                required
-                disabled={loading}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl text-sm
-                  text-white placeholder-white/20 outline-none
-                  transition-all duration-300
-                  focus:border-neon-cyan/50
-                  disabled:opacity-50"
-                style={{
-                  background: 'rgba(5, 5, 5, 0.6)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                }}
-              />
             </div>
 
-            {/* Error */}
+            {/* Error banner */}
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 px-4 py-3 rounded-xl"
-                style={{
-                  background: 'rgba(255, 0, 60, 0.06)',
-                  border: '1px solid rgba(255, 0, 60, 0.15)',
-                }}
+              <div
+                role="alert"
+                className="flex items-start gap-2.5 p-3 rounded-xl bg-status-error-bg border border-status-error-border text-status-error-text text-xs shadow-2xs"
               >
-                <AlertCircle size={14} className="text-neon-red flex-shrink-0" />
-                <p className="text-xs text-neon-red/80">{error}</p>
-              </motion.div>
+                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+                <span>{error}</span>
+              </div>
             )}
 
             {/* Submit */}
             <div className="pt-2">
-              <NeonButton
+              <Button
                 type="submit"
-                variant="cyan"
-                size="lg"
+                variant="primary"
+                size="md"
+                fullWidth
                 loading={loading}
                 disabled={!email.trim() || !password.trim()}
-                icon={<Lock size={16} />}
-                className="w-full"
+                icon={<Lock size={16} strokeWidth={2.2} />}
               >
-                Authenticate
-              </NeonButton>
+                Sign In
+              </Button>
             </div>
           </form>
         </div>

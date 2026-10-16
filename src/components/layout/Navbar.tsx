@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Blocks, Menu, X, Activity } from 'lucide-react';
-import { GlowingBadge } from '../ui';
+import { ShieldCheck, FileCheck2, LayoutDashboard, Menu, X } from 'lucide-react';
+import ThemeSwitcher from '../common/ThemeSwitcher';
 import { getStats } from '../../services/api';
 
 export default function Navbar() {
@@ -15,155 +15,154 @@ export default function Navbar() {
     const fetchStats = async () => {
       try {
         const stats = await getStats();
-        if (mounted) setTotalDegrees(stats.totalDegreesIssued);
+        if (mounted && typeof stats?.totalDegreesIssued === 'number') {
+          setTotalDegrees(stats.totalDegreesIssued);
+        }
       } catch {
-        // Stats endpoint requires admin auth — silently fail for public pages
+        // Public users won't have admin access to stats endpoint; fail silently
         if (mounted) setTotalDegrees(null);
       }
     };
     fetchStats();
-    // Refresh stats every 30 seconds
-    const interval = setInterval(fetchStats, 30000);
-    return () => { mounted = false; clearInterval(interval); };
+    const interval = setInterval(fetchStats, 60000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
 
   const navLinks = [
-    { to: '/', label: 'Verify', icon: <Shield size={16} /> },
-    { to: '/admin', label: 'Dashboard', icon: <Blocks size={16} /> },
+    { to: '/', label: 'Verify a Degree', icon: <FileCheck2 size={16} /> },
+    { to: '/admin', label: 'Dashboard', icon: <LayoutDashboard size={16} /> },
   ];
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="fixed top-0 left-0 right-0 z-50"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div
-          className="mt-3 flex items-center justify-between rounded-2xl px-5 py-3"
-          style={{
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(5, 5, 5, 0.85))',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.06)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-          }}
-        >
-          {/* ── Logo ─────────────────────────────────── */}
-          <Link to="/" className="flex items-center gap-3 group no-underline">
-            <motion.div
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              transition={{ type: 'spring', stiffness: 400 }}
-              className="relative"
-            >
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(0, 255, 102, 0.1))',
-                  border: '1px solid rgba(0, 240, 255, 0.3)',
-                  boxShadow: '0 0 12px rgba(0, 240, 255, 0.2)',
-                }}
-              >
-                <Shield size={18} className="text-neon-cyan" />
+    <header className="sticky top-3 z-50 px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto transition-all duration-300">
+      <div className="rounded-2xl bg-surface-card/85 backdrop-blur-xl border border-border-main shadow-card transition-colors duration-300 px-4 sm:px-6 py-2.5">
+        <div className="flex items-center justify-between h-12">
+          {/* ── Brand Logo ─────────────────────────────────── */}
+          <Link
+            to="/"
+            className="flex items-center gap-3 group no-underline focus-visible:ring-2 focus-visible:ring-teal-brand rounded-xl p-1"
+          >
+            <div className="relative">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-brand/20 via-surface-teal-subtle to-secondary-blue/15 border border-teal-brand/35 flex items-center justify-center text-teal-brand group-hover:scale-105 transition-transform duration-200 shadow-xs">
+                <ShieldCheck size={22} strokeWidth={2.3} />
               </div>
-            </motion.div>
-            <div className="hidden sm:block">
-              <span className="text-sm font-bold tracking-wide gradient-text-cyan">
-                DEGREE VAULT
+              <div className="absolute inset-0 rounded-xl bg-teal-brand/20 blur-md -z-10 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </div>
+
+            <div className="flex flex-col">
+              <span className="text-base font-extrabold text-content-main tracking-tight leading-tight">
+                Degree Vault
               </span>
-              <p className="text-[10px] text-white/30 tracking-widest uppercase -mt-0.5">
-                Blockchain Verified
-              </p>
+              <span className="text-[11px] text-content-muted leading-tight font-medium">
+                Trusted credential verification
+              </span>
             </div>
           </Link>
 
-          {/* ── Desktop Nav Links ────────────────────── */}
-          <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`
-                  flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
-                  transition-all duration-300 no-underline
-                  ${isActive(link.to)
-                    ? 'bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20'
-                    : 'text-white/50 hover:text-white/80 hover:bg-white/5 border border-transparent'
-                  }
-                `}
-              >
-                {link.icon}
-                {link.label}
-              </Link>
-            ))}
-          </div>
+          {/* ── Desktop Navigation ─────────────────────────── */}
+          <nav className="hidden md:flex items-center gap-1.5" aria-label="Main Navigation">
+            {navLinks.map((link) => {
+              const active = isActive(link.to);
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`
+                    flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold
+                    transition-all duration-200 no-underline select-none
+                    ${
+                      active
+                        ? 'bg-surface-teal-subtle text-teal-brand border border-teal-brand/25 shadow-xs'
+                        : 'text-content-secondary hover:text-content-main hover:bg-surface-muted border border-transparent'
+                    }
+                    focus-visible:ring-2 focus-visible:ring-teal-brand outline-none
+                  `}
+                >
+                  <span className={active ? 'text-teal-brand' : 'text-content-muted'}>
+                    {link.icon}
+                  </span>
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-          {/* ── Stats Badge + Mobile Toggle ──────────── */}
+          {/* ── Right Actions: Theme Switcher & Stats ──────── */}
           <div className="flex items-center gap-3">
             {totalDegrees !== null && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-              >
-                <GlowingBadge variant="green" size="sm" pulse icon={<Activity size={12} />}>
-                  {totalDegrees.toLocaleString()} Issued
-                </GlowingBadge>
-              </motion.div>
+              <span className="hidden lg:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-surface-muted text-content-secondary border border-border-subtle shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-verified mr-1.5 animate-pulse" />
+                {totalDegrees.toLocaleString()} registered
+              </span>
             )}
+
+            <div className="hidden sm:block">
+              <ThemeSwitcher />
+            </div>
 
             {/* Mobile menu button */}
             <button
+              type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 text-white/50 hover:text-white/80 transition-colors"
+              aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="md:hidden p-2 rounded-xl text-content-secondary hover:text-content-main hover:bg-surface-muted transition-colors focus-visible:ring-2 focus-visible:ring-teal-brand outline-none"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* ── Mobile Menu ────────────────────────────── */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden mt-2 rounded-2xl overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(5, 5, 5, 0.95))',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.06)',
-              }}
-            >
-              <div className="p-3 flex flex-col gap-1">
-                {navLinks.map((link) => (
+      {/* ── Mobile Menu Dropdown ────────────────────────── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden mt-2 rounded-2xl border border-border-main bg-surface-card/95 backdrop-blur-xl p-4 shadow-elevated space-y-3"
+          >
+            <div className="flex flex-col gap-1">
+              {navLinks.map((link) => {
+                const active = isActive(link.to);
+                return (
                   <Link
                     key={link.to}
                     to={link.to}
                     onClick={() => setMobileOpen(false)}
                     className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium
-                      transition-all duration-300 no-underline
-                      ${isActive(link.to)
-                        ? 'bg-neon-cyan/10 text-neon-cyan'
-                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                      flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold
+                      transition-colors no-underline
+                      ${
+                        active
+                          ? 'bg-surface-teal-subtle text-teal-brand border border-teal-brand/20'
+                          : 'text-content-secondary hover:text-content-main hover:bg-surface-muted'
                       }
                     `}
                   >
                     {link.icon}
-                    {link.label}
+                    <span>{link.label}</span>
                   </Link>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.nav>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-border-subtle flex items-center justify-between">
+              <span className="text-xs text-content-muted font-medium">Appearance</span>
+              <ThemeSwitcher />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }

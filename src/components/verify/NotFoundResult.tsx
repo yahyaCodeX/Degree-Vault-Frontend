@@ -1,84 +1,127 @@
 import { motion } from 'framer-motion';
-import { SearchX, ArrowLeft } from 'lucide-react';
-import { GlassCard, GlowingBadge, NeonButton } from '../ui';
+import { SearchX, ArrowLeft, AlertCircle, HelpCircle } from 'lucide-react';
+import { Button, Badge } from '../ui';
 
 interface NotFoundResultProps {
-  degreeId: string;
-  message: string;
+  guci: string;
+  message?: string;
   onReset: () => void;
+  isError?: boolean;
 }
 
-/**
- * NotFoundResult — Displayed when the degree ID is not found on-chain.
- * Distinct from Tampered — this means the degree was never issued, not that it was altered.
- */
-export default function NotFoundResult({ degreeId, message, onReset }: NotFoundResultProps) {
+export default function NotFoundResult({
+  guci,
+  message,
+  onReset,
+  isError = false,
+}: NotFoundResultProps) {
+  const isNetworkIssue =
+    message?.toLowerCase().includes('network') ||
+    message?.toLowerCase().includes('unavailable') ||
+    message?.toLowerCase().includes('failed to fetch');
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="w-full max-w-2xl mx-auto"
+      transition={{ duration: 0.35 }}
+      className="w-full max-w-2xl mx-auto space-y-6"
     >
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="inline-flex mb-5"
-        >
-          <div
-            className="w-24 h-24 rounded-full flex items-center justify-center"
-            style={{
-              background: 'radial-gradient(circle, rgba(255, 184, 0, 0.12) 0%, rgba(255, 184, 0, 0.02) 70%)',
-              border: '2px solid rgba(255, 184, 0, 0.25)',
-              boxShadow: '0 0 30px rgba(255, 184, 0, 0.12)',
-            }}
-          >
-            <SearchX size={42} className="text-neon-amber" />
-          </div>
-        </motion.div>
-
-        <h2 className="text-3xl font-extrabold text-neon-amber mb-2">
-          Degree Not Found
-        </h2>
-        <p className="text-sm text-white/40 max-w-md mx-auto">
-          {message || 'No degree record was found on the blockchain with this ID.'}
-        </p>
-      </div>
-
-      <GlassCard className="p-5 mb-6" hoverGlow={false}>
-        <div className="flex items-center gap-2 mb-3">
-          <GlowingBadge variant="amber" size="sm">NOT FOUND</GlowingBadge>
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/30">Queried Degree ID</span>
-            <span className="text-xs font-mono text-neon-amber/70">{degreeId}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-white/30">On-chain Records</span>
-            <span className="text-xs font-mono text-white/40">0 matches</span>
-          </div>
-        </div>
+      {/* ── Status Banner with Ambient Warning Glow ────── */}
+      <div className="relative">
+        <div
+          className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-status-pending/15 via-teal-brand/10 to-status-pending/15 blur-xl -z-10 opacity-70"
+          aria-hidden="true"
+        />
 
         <div
-          className="mt-4 p-3 rounded-lg"
+          className="bg-surface-card border border-border-main rounded-2xl p-7 sm:p-9 text-center relative z-10"
           style={{
-            background: 'rgba(255, 184, 0, 0.03)',
-            border: '1px solid rgba(255, 184, 0, 0.1)',
+            boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)',
           }}
         >
-          <p className="text-[11px] text-neon-amber/60 text-center">
-            This may indicate a typo in the Degree ID, or the degree has not yet been registered on the blockchain.
-          </p>
-        </div>
-      </GlassCard>
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-status-pending-bg to-status-pending-border/30 text-status-pending border border-status-pending-border flex items-center justify-center mx-auto mb-4 shadow-sm">
+            {isNetworkIssue ? (
+              <AlertCircle size={34} strokeWidth={2.4} />
+            ) : (
+              <SearchX size={34} strokeWidth={2.4} />
+            )}
+          </div>
 
-      <div className="flex justify-center">
-        <NeonButton variant="ghost" size="md" onClick={onReset} icon={<ArrowLeft size={16} />}>
-          Try Again
-        </NeonButton>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-content-main mb-2 tracking-tight">
+            {isNetworkIssue
+              ? 'Verification Service Unavailable'
+              : 'Degree Record Not Found'}
+          </h2>
+
+          <p className="text-xs sm:text-sm text-content-secondary max-w-lg mx-auto leading-relaxed">
+            {isNetworkIssue
+              ? 'Unable to communicate with the verification node. This is a temporary connection issue and does not indicate a fraudulent credential.'
+              : (
+                <>
+                  No registered credential was found for GUCI{' '}
+                  <span className="font-mono font-bold text-content-main">
+                    {guci || 'N/A'}
+                  </span>
+                  .
+                </>
+              )}
+          </p>
+
+          <div className="mt-5">
+            <Badge variant="warning" dot size="md">
+              {isNetworkIssue ? 'Connection Error' : 'Record Not Found'}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Guidance Card ─────────────────────────────── */}
+      <div
+        className="bg-surface-card border border-border-main rounded-2xl p-6 sm:p-7 space-y-3.5"
+        style={{
+          boxShadow: 'var(--shadow-card), var(--inset-card-highlight)',
+        }}
+      >
+        <div className="flex items-center gap-2.5 text-content-main">
+          <div className="w-7 h-7 rounded-lg bg-surface-teal-subtle text-teal-brand border border-teal-brand/20 flex items-center justify-center shadow-2xs">
+            <HelpCircle size={16} strokeWidth={2.2} />
+          </div>
+          <h3 className="text-sm font-bold tracking-tight">Recommended next steps</h3>
+        </div>
+
+        <ul className="text-xs text-content-secondary space-y-2.5 list-disc list-inside leading-relaxed">
+          {isNetworkIssue ? (
+            <>
+              <li>Verify your internet connection and try submitting the verification again.</li>
+              <li>The verification network or node might be experiencing brief scheduled maintenance.</li>
+            </>
+          ) : (
+            <>
+              <li>Check the student roll number for typographical errors (e.g., uppercase vs lowercase).</li>
+              <li>Confirm with the issuing university registrar that this degree has been registered on the blockchain.</li>
+              <li>Newly registered credentials may take a few moments to be confirmed by network nodes.</li>
+            </>
+          )}
+        </ul>
+
+        {message && !isNetworkIssue && (
+          <div className="mt-4 p-3.5 rounded-xl bg-surface-muted border border-border-subtle text-content-secondary text-xs shadow-2xs font-mono">
+            {message}
+          </div>
+        )}
+      </div>
+
+      {/* ── Action ─────────────────────────────────────── */}
+      <div className="flex justify-center pt-3">
+        <Button
+          variant="primary"
+          size="md"
+          onClick={onReset}
+          icon={<ArrowLeft size={16} />}
+        >
+          {isNetworkIssue ? 'Retry Verification' : 'Search Again'}
+        </Button>
       </div>
     </motion.div>
   );

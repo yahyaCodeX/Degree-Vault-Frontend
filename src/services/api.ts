@@ -22,11 +22,48 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('dv_token');
-      // Optionally redirect to login
     }
     return Promise.reject(error);
   }
 );
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHARED TYPES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** Full GUCI-based verification response from the backend */
+export interface VerifyDegreeResponse {
+  globalCredentialId: string;   // e.g. "MUET-22CS001"
+  universityCode: string;       // e.g. "MUET"
+  rollNo: string;               // e.g. "22CS001"
+  status: string;               // VERIFIED | TAMPERED | NOT_FOUND | ERROR
+  message: string;
+  studentName: string;
+  fatherName: string;
+  department: string;
+  cgpa: string;
+  dataHash: string;             // SHA-256 of (rollNo|studentName|cgpa|universityCode)
+  ipfsCid: string;
+  issuerAddress: string;
+  issueDate: number;            // Unix epoch seconds
+  verified: boolean;
+  authentic: boolean;
+  tampered: boolean;
+  integrityMessage: string;
+  verificationUrl: string;      // https://yourdomain.com/verify?id=MUET-22CS001
+  qrCodeBase64: string | null;  // Base64-encoded QR code PNG
+}
+
+/** Response returned by the single-degree issuance endpoint */
+export interface IssueTransactionResponse {
+  transactionHash: string;
+  status: string;
+  message: string;
+  issuerAddress: string | null;
+  globalCredentialId: string;   // e.g. "MUET-22CS001"
+  verificationUrl: string;      // public verification URL
+  qrCodeBase64: string | null;  // Base64-encoded QR code PNG
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // API FUNCTIONS
@@ -44,35 +81,47 @@ export const getStats = async () => {
   return data as { totalDegreesIssued: number; maxBatchSize: number };
 };
 
-/** POST /api/v1/degrees/verify/{degreeId} (multipart) */
-export const verifyDegree = async (degreeId: string, file: File) => {
-  const formData = new FormData();
-  formData.append('file', file);
-  const { data } = await api.post(`/degrees/verify/${degreeId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return data;
+/**
+ * GET /api/v1/degrees/verify/{globalCredentialId}
+ *
+ * Verifies a credential by its GUCI (no file upload required).
+ * The backend recomputes the data hash from on-chain fields and compares.
+ *
+ * @param globalCredentialId  e.g. "MUET-22CS001"
+ */
+export const verifyDegree = async (globalCredentialId: string): Promise<VerifyDegreeResponse> => {
+  const { data } = await api.get(`/degrees/verify/${encodeURIComponent(globalCredentialId)}`);
+  return data as VerifyDegreeResponse;
 };
 
-/** POST /api/v1/degrees/issue (multipart: file + data JSON) */
+/**
+ * POST /api/v1/degrees/issue (multipart: file + data JSON)
+ *
+ * Issues a single degree credential. The backend:
+ * 1. Derives the GUCI = universityCode + "-" + rollNo
+ * 2. Computes SHA-256 data hash
+ * 3. Uploads PDF to IPFS
+ * 4. Anchors hash on blockchain
+ * 5. Returns QR code and verification URL
+ */
 export const issueSingleDegree = async (
   file: File,
   data: {
-    degreeId: string;
-    studentId: string;
+    universityCode: string;
+    rollNo: string;
     studentName: string;
     fatherName: string;
     department: string;
     cgpa: string;
   }
-) => {
+): Promise<IssueTransactionResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
   const { data: response } = await api.post('/degrees/issue', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return response as { transactionHash: string; status: string; message: string; issuerAddress: string | null };
+  return response as IssueTransactionResponse;
 };
 
 /** POST /api/v1/degrees/issue/batch (multipart: csvFile + zipFile) */

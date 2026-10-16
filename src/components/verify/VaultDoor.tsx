@@ -1,247 +1,232 @@
-import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useDropzone } from 'react-dropzone';
-import { Shield, Upload, FileText, Search, X, Lock } from 'lucide-react';
-import { NeonButton } from '../ui';
+import { useState } from 'react';
+import { Building2, Hash, Search, ShieldCheck, Info } from 'lucide-react';
+import { Button } from '../ui';
 
 interface VaultDoorProps {
-  onSubmit: (degreeId: string, file: File) => void;
+  onSubmit: (globalCredentialId: string) => void;
   loading: boolean;
 }
 
 /**
- * VaultDoor — The central "vault door" search/upload component.
- * Employers enter a Degree ID and upload a PDF for verification.
- * Features a holographic dropzone with glowing borders and animated states.
+ * Verification entry form.
+ *
+ * Accepts a University Code + Roll Number to derive the GUCI
+ * (Globally Unique Credential Identifier) and triggers verification.
+ * No file upload is needed — the backend recomputes the data hash
+ * deterministically from on-chain fields.
  */
 export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
-  const [degreeId, setDegreeId] = useState('');
-  const [file, setFile] = useState<File | null>(null);
-  const [focused, setFocused] = useState(false);
+  const [universityCode, setUniversityCode] = useState('');
+  const [rollNo, setRollNo] = useState('');
+  const [guciManual, setGuciManual] = useState('');
+  const [mode, setMode] = useState<'split' | 'direct'>('split');
+  const [touched, setTouched] = useState(false);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      setFile(acceptedFiles[0]);
-    }
-  }, []);
+  // Derived GUCI from the two fields (split mode)
+  const derivedGuci =
+    universityCode.trim() && rollNo.trim()
+      ? `${universityCode.trim().toUpperCase()}-${rollNo.trim().toUpperCase()}`
+      : '';
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-    },
-    maxFiles: 1,
-    multiple: false,
-    disabled: loading,
-  });
+  const activeGuci = mode === 'split' ? derivedGuci : guciManual.trim().toUpperCase();
+  const canSubmit = activeGuci.length > 0 && !loading;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (degreeId.trim() && file) {
-      onSubmit(degreeId.trim(), file);
+    setTouched(true);
+    if (canSubmit) {
+      onSubmit(activeGuci);
     }
   };
 
-  const canSubmit = degreeId.trim().length > 0 && file !== null && !loading;
-
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="w-full max-w-2xl mx-auto"
-    >
-      <form onSubmit={handleSubmit}>
-        {/* ── Degree ID Input ──────────────────────────── */}
-        <motion.div
-          className="relative mb-5"
-          animate={focused ? { scale: 1.01 } : { scale: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
-            <Search size={18} className={`transition-colors duration-300 ${
-              focused ? 'text-neon-cyan' : 'text-white/25'
-            }`} />
+    <div className="relative w-full max-w-2xl mx-auto">
+      {/* ── Soft ambient glow ── */}
+      <div
+        className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-teal-brand/15 via-secondary-blue/10 to-teal-brand/15 blur-2xl -z-10 opacity-70 transition-opacity duration-300"
+        aria-hidden="true"
+      />
+
+      <div
+        className="bg-surface-card border border-border-main rounded-2xl p-7 sm:p-9 transition-colors duration-300 relative z-10"
+        style={{ boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)' }}
+      >
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
+
+          {/* ── Mode toggle ── */}
+          <div className="flex p-1 rounded-xl bg-surface-muted/80 backdrop-blur-sm border border-border-main w-fit shadow-xs">
+            <button
+              type="button"
+              onClick={() => setMode('split')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer
+                ${mode === 'split'
+                  ? 'bg-surface-card text-teal-brand shadow-xs border border-border-subtle'
+                  : 'text-content-secondary hover:text-content-main border border-transparent'}`}
+            >
+              <Building2 size={13} />
+              <span>University + Roll No</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('direct')}
+              className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer
+                ${mode === 'direct'
+                  ? 'bg-surface-card text-teal-brand shadow-xs border border-border-subtle'
+                  : 'text-content-secondary hover:text-content-main border border-transparent'}`}
+            >
+              <Hash size={13} />
+              <span>Paste GUCI directly</span>
+            </button>
           </div>
-          <input
-            id="degree-id-input"
-            type="text"
-            value={degreeId}
-            onChange={(e) => setDegreeId(e.target.value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="Enter Degree ID (e.g. DEG-2026-001)"
-            disabled={loading}
-            className="w-full pl-12 pr-5 py-4 rounded-2xl text-sm font-mono tracking-wide
-              text-white placeholder-white/20
-              outline-none transition-all duration-300
-              disabled:opacity-50"
-            style={{
-              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(5, 5, 5, 0.8))',
-              backdropFilter: 'blur(16px)',
-              border: focused
-                ? '1px solid rgba(0, 240, 255, 0.5)'
-                : '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: focused
-                ? '0 0 20px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                : 'inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-            }}
-          />
-        </motion.div>
 
-        {/* ── Dropzone ─────────────────────────────────── */}
-        <motion.div
-          {...getRootProps()}
-          animate={{
-            borderColor: isDragActive
-              ? 'rgba(0, 240, 255, 0.7)'
-              : file
-                ? 'rgba(0, 255, 102, 0.3)'
-                : 'rgba(255, 255, 255, 0.06)',
-            boxShadow: isDragActive
-              ? '0 0 30px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 240, 255, 0.05)'
-              : file
-                ? '0 0 15px rgba(0, 255, 102, 0.1)'
-                : '0 4px 24px rgba(0, 0, 0, 0.3)',
-          }}
-          transition={{ duration: 0.3 }}
-          className={`
-            relative rounded-2xl p-8 text-center cursor-pointer
-            transition-colors duration-300 mb-6 overflow-hidden
-            ${loading ? 'pointer-events-none opacity-50' : ''}
-          `}
-          style={{
-            background: isDragActive
-              ? 'linear-gradient(135deg, rgba(0, 240, 255, 0.05), rgba(15, 23, 42, 0.8))'
-              : 'linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(5, 5, 5, 0.7))',
-            backdropFilter: 'blur(12px)',
-            border: '1px dashed',
-          }}
-        >
-          <input {...getInputProps()} />
-
-          {/* Scan line effect on drag */}
-          <AnimatePresence>
-            {isDragActive && (
-              <motion.div
-                initial={{ top: '-2px' }}
-                animate={{ top: '100%' }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                className="absolute left-0 right-0 h-[2px] z-10"
-                style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.6), transparent)',
-                  boxShadow: '0 0 10px rgba(0, 240, 255, 0.4)',
-                }}
-              />
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            {file ? (
-              /* ── File Selected State ────── */
-              <motion.div
-                key="file-selected"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col items-center gap-3"
-              >
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(0, 255, 102, 0.1), rgba(0, 255, 102, 0.05))',
-                    border: '1px solid rgba(0, 255, 102, 0.2)',
-                  }}
-                >
-                  <FileText size={24} className="text-neon-green" />
+          {/* ── SPLIT MODE: University Code + Roll Number ── */}
+          {mode === 'split' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* University Code */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="verify-uni-code"
+                    className="text-xs font-bold uppercase tracking-wider text-content-main"
+                  >
+                    University Code <span className="text-teal-brand">*</span>
+                  </label>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white/80">{file.name}</p>
-                  <p className="text-xs text-white/30 mt-0.5">
-                    {(file.size / 1024).toFixed(1)} KB • Ready for verification
-                  </p>
+                <div className="relative group">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-teal-brand transition-colors duration-200 pointer-events-none">
+                    <Building2 size={16} />
+                  </div>
+                  <input
+                    id="verify-uni-code"
+                    type="text"
+                    value={universityCode}
+                    onChange={(e) => setUniversityCode(e.target.value)}
+                    placeholder="e.g. MUET"
+                    disabled={loading}
+                    aria-required="true"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase
+                      bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70 placeholder:normal-case placeholder:tracking-normal
+                      focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+                      disabled:opacity-50 transition-all duration-200 outline-none shadow-xs"
+                  />
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setFile(null);
-                  }}
-                  className="flex items-center gap-1 text-xs text-neon-red/60 hover:text-neon-red transition-colors mt-1"
-                >
-                  <X size={12} /> Remove file
-                </button>
-              </motion.div>
-            ) : isDragActive ? (
-              /* ── Drag Active State ──────── */
-              <motion.div
-                key="drag-active"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center gap-3 py-4"
-              >
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 0.8, repeat: Infinity }}
-                >
-                  <Shield size={36} className="text-neon-cyan" />
-                </motion.div>
-                <p className="text-sm font-semibold text-neon-cyan">
-                  Drop to authenticate
+                <p className="text-[11px] text-content-muted mt-1.5">
+                  Short code of the issuing university (e.g. MUET, UET, NUST, FAST)
                 </p>
-              </motion.div>
-            ) : (
-              /* ── Default State ──────────── */
-              <motion.div
-                key="default"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center gap-3 py-4"
-              >
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01))',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
-                  }}
-                >
-                  <Upload size={22} className="text-white/30" />
-                </div>
-                <div>
-                  <p className="text-sm text-white/50">
-                    <span className="text-white/70 font-medium">Drop a degree PDF</span> or click to browse
-                  </p>
-                  <p className="text-xs text-white/20 mt-1">
-                    PDF files only • Max 50MB
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+              </div>
 
-        {/* ── Submit Button ────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex justify-center"
-        >
-          <NeonButton
-            type="submit"
-            variant="cyan"
-            size="lg"
-            disabled={!canSubmit}
-            loading={loading}
-            icon={<Lock size={18} />}
-          >
-            Verify Authenticity
-          </NeonButton>
-        </motion.div>
-      </form>
-    </motion.div>
+              {/* Roll Number */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="verify-roll-no"
+                    className="text-xs font-bold uppercase tracking-wider text-content-main"
+                  >
+                    Student Roll Number <span className="text-teal-brand">*</span>
+                  </label>
+                </div>
+                <div className="relative group">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-teal-brand transition-colors duration-200 pointer-events-none">
+                    <Hash size={16} />
+                  </div>
+                  <input
+                    id="verify-roll-no"
+                    type="text"
+                    value={rollNo}
+                    onChange={(e) => setRollNo(e.target.value)}
+                    placeholder="e.g. 22CS001"
+                    disabled={loading}
+                    aria-required="true"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-mono tracking-wide uppercase
+                      bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70 placeholder:normal-case placeholder:tracking-normal
+                      focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+                      disabled:opacity-50 transition-all duration-200 outline-none shadow-xs"
+                  />
+                </div>
+                <p className="text-[11px] text-content-muted mt-1.5">
+                  The roll number printed on the official transcript or degree
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* ── DIRECT MODE: Paste GUCI ── */}
+          {mode === 'direct' && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label
+                  htmlFor="verify-guci"
+                  className="text-xs font-bold uppercase tracking-wider text-content-main"
+                >
+                  Global Credential ID (GUCI) <span className="text-teal-brand">*</span>
+                </label>
+              </div>
+              <div className="relative group">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted group-focus-within:text-teal-brand transition-colors duration-200 pointer-events-none">
+                  <Search size={18} />
+                </div>
+                <input
+                  id="verify-guci"
+                  type="text"
+                  value={guciManual}
+                  onChange={(e) => setGuciManual(e.target.value)}
+                  placeholder="e.g. MUET-22CS001"
+                  disabled={loading}
+                  aria-required="true"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-mono tracking-wide uppercase
+                    bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70 placeholder:normal-case placeholder:tracking-normal
+                    focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+                    disabled:opacity-50 transition-all duration-200 outline-none shadow-xs"
+                />
+              </div>
+              <p id="guci-help" className="text-[11px] text-content-muted mt-1.5">
+                Paste the GUCI from the QR code or the degree certificate. Format: UNIVERSITYCODE-ROLLNO
+              </p>
+            </div>
+          )}
+
+          {/* ── Live GUCI preview (split mode only) ── */}
+          {mode === 'split' && derivedGuci && (
+            <div className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-teal-subtle/40 border border-teal-brand/25">
+              <div className="w-5 h-5 rounded-md bg-teal-brand/15 text-teal-brand flex items-center justify-center flex-shrink-0">
+                <Info size={12} />
+              </div>
+              <span className="text-xs text-content-secondary">
+                Credential ID:{' '}
+                <span className="font-mono font-bold text-teal-brand tracking-wider">{derivedGuci}</span>
+              </span>
+            </div>
+          )}
+
+          {/* ── Submit ── */}
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={!canSubmit}
+              loading={loading}
+              icon={<ShieldCheck size={19} strokeWidth={2.3} />}
+            >
+              Verify Degree on Blockchain
+            </Button>
+
+            {!canSubmit && touched && (
+              <p className="text-xs text-status-pending text-center mt-2.5 font-medium">
+                {mode === 'split'
+                  ? 'Please enter both the University Code and Roll Number to proceed.'
+                  : 'Please enter a valid Credential ID (GUCI) to proceed.'}
+              </p>
+            )}
+          </div>
+
+          {/* ── No file upload needed note ── */}
+          <p className="text-[11px] text-content-muted text-center leading-relaxed">
+            No document upload required — verification is performed entirely on-chain using the credential's cryptographic hash.
+          </p>
+        </form>
+      </div>
+    </div>
   );
 }

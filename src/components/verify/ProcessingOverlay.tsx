@@ -1,135 +1,89 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Shield } from 'lucide-react';
-import CryptoRevealText, { HEX_CHARS } from './CryptoRevealText';
+import { Shield, Loader2 } from 'lucide-react';
 
 interface ProcessingOverlayProps {
-  degreeId: string;
+  guci: string;
 }
 
-const PROCESSING_STEPS = [
-  'Hashing document with SHA-256...',
-  'Querying Ethereum smart contract...',
-  'Comparing on-chain hash with document...',
-  'Verifying issuer signature...',
-  'Resolving IPFS content identifier...',
-  'Finalizing integrity check...',
+const VERIFICATION_STEPS = [
+  'Querying blockchain registry for credential...',
+  'Recomputing deterministic data hash from on-chain fields...',
+  'Comparing credential hash against registered record...',
+  'Verifying issuer signature and GUCI integrity...',
+  'Finalizing credential authenticity report...',
 ];
 
-/**
- * ProcessingOverlay — The "Cryptographic Reveal" animation shown
- * while the verification API call is in progress.
- * Displays sequential processing steps with a hash scramble effect.
- */
-export default function ProcessingOverlay({ degreeId }: ProcessingOverlayProps) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [hashPreview, setHashPreview] = useState('');
+export default function ProcessingOverlay({ guci }: ProcessingOverlayProps) {
+  const [stepIndex, setStepIndex] = useState(0);
 
-  // Cycle through processing steps
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % PROCESSING_STEPS.length);
-    }, 1200);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Scramble a fake hash rapidly
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const chars = HEX_CHARS;
-      let hash = '0x';
-      for (let i = 0; i < 40; i++) {
-        hash += chars[Math.floor(Math.random() * chars.length)];
-      }
-      setHashPreview(hash);
-    }, 50);
+      setStepIndex((prev) => (prev < VERIFICATION_STEPS.length - 1 ? prev + 1 : prev));
+    }, 600);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="w-full max-w-2xl mx-auto"
-    >
-      <div className="text-center py-12">
-        {/* Rotating shield icon */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-          className="inline-flex mb-8"
-        >
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center"
-            style={{
-              background: 'radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%)',
-              border: '2px solid rgba(0, 240, 255, 0.2)',
-              boxShadow: '0 0 30px rgba(0, 240, 255, 0.15)',
-            }}
-          >
-            <Shield size={32} className="text-neon-cyan" />
+    <div className="relative w-full max-w-xl mx-auto py-12">
+      {/* ── Ambient Glow behind processing card ── */}
+      <div
+        className="absolute inset-0 rounded-3xl bg-gradient-to-r from-teal-brand/12 via-secondary-blue/12 to-teal-brand/12 blur-2xl -z-10 opacity-70"
+        aria-hidden="true"
+      />
+
+      <div
+        className="bg-surface-card border border-border-main rounded-2xl p-8 sm:p-10 text-center relative z-10"
+        style={{
+          boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)',
+        }}
+      >
+        {/* Animated shield spinner */}
+        <div className="relative w-18 h-18 mx-auto mb-6 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-surface-teal-subtle to-surface-blue-subtle text-teal-brand border border-teal-brand/25 flex items-center justify-center shadow-xs">
+            <Shield size={30} strokeWidth={2.3} />
           </div>
-        </motion.div>
-
-        {/* Title */}
-        <h2 className="text-xl font-bold text-white/80 mb-2">
-          Verifying Cryptographic Integrity
-        </h2>
-        <p className="text-xs text-white/30 font-mono tracking-wide mb-8">
-          DEGREE ID: {degreeId}
-        </p>
-
-        {/* Processing Steps */}
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3 }}
-          className="mb-8"
-        >
-          <p className="text-sm text-neon-cyan/80 font-medium">
-            {PROCESSING_STEPS[currentStep]}
-          </p>
-        </motion.div>
-
-        {/* Scrambling Hash Display */}
-        <div
-          className="mx-auto max-w-md p-4 rounded-xl"
-          style={{
-            background: 'rgba(0, 240, 255, 0.03)',
-            border: '1px solid rgba(0, 240, 255, 0.08)',
-          }}
-        >
-          <p className="text-[10px] text-white/20 uppercase tracking-widest mb-2">
-            Active Hash Comparison
-          </p>
-          <p className="font-mono text-xs text-neon-cyan/50 break-all leading-relaxed">
-            {hashPreview}
-          </p>
+          <div className="absolute -inset-1.5 border-2 border-teal-brand/20 border-t-teal-brand rounded-full animate-spin" />
         </div>
 
-        {/* Progress dots */}
-        <div className="flex items-center justify-center gap-2 mt-8">
-          {[0, 1, 2].map((i) => (
-            <motion.div
+        {/* Heading */}
+        <h2 className="text-xl sm:text-2xl font-extrabold text-content-main mb-1.5 tracking-tight">
+          Verifying Credential
+        </h2>
+        <p className="text-xs font-mono text-content-secondary mb-6">
+          Querying record for <span className="text-content-main font-bold">{guci}</span>
+        </p>
+
+        {/* Current status step */}
+        <div className="p-3.5 rounded-xl bg-surface-page/70 border border-border-subtle max-w-md mx-auto mb-6 shadow-2xs">
+          <motion.div
+            key={stepIndex}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-center gap-2"
+          >
+            <Loader2 size={15} className="animate-spin text-teal-brand" />
+            <span className="text-xs font-semibold text-content-main">
+              {VERIFICATION_STEPS[stepIndex]}
+            </span>
+          </motion.div>
+        </div>
+
+        {/* Progress indicator bars */}
+        <div className="flex items-center justify-center gap-1.5">
+          {VERIFICATION_STEPS.map((_, i) => (
+            <div
               key={i}
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.3, 1, 0.3],
-              }}
-              transition={{
-                duration: 1,
-                repeat: Infinity,
-                delay: i * 0.2,
-              }}
-              className="w-2 h-2 rounded-full bg-neon-cyan"
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i <= stepIndex
+                  ? 'w-7 bg-teal-brand'
+                  : 'w-1.5 bg-border-main'
+              }`}
             />
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

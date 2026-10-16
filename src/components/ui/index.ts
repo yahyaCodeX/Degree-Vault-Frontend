@@ -1,3 +1,3 @@
-export { default as GlassCard } from './GlassCard';
-export { default as NeonButton } from './NeonButton';
-export { default as GlowingBadge } from './GlowingBadge';
+export { default as Card, GlassCard } from './Card';
+export { default as Button, NeonButton } from './Button';
+export { default as Badge, GlowingBadge } from './Badge';
