@@ -9,6 +9,9 @@ import {
   ShieldCheck,
   Building2,
   Sparkles,
+  Database,
+  CheckCircle2,
+  Ban,
 } from 'lucide-react';
 import { Button, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -16,14 +19,17 @@ import LoginGate from '../components/dashboard/LoginGate';
 import HolographicDropzone from '../components/dashboard/HolographicDropzone';
 import SingleIssueForm from '../components/dashboard/SingleIssueForm';
 import BatchLedger from '../components/dashboard/BatchLedger';
+import DegreeLedger from '../components/dashboard/DegreeLedger';
 import { issueBatch, getStats } from '../services/api';
 
 type DashboardView = 'upload' | 'processing';
-type IssueMode = 'single' | 'batch';
+type IssueMode = 'single' | 'batch' | 'ledger';
 
 interface Stats {
   totalDegreesIssued: number;
   maxBatchSize: number;
+  activeDegrees?: number;
+  totalRevoked?: number;
 }
 
 export default function DashboardPage() {
@@ -36,22 +42,19 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
 
   // Fetch real statistics when authenticated
+  const fetchStats = useCallback(async () => {
+    try {
+      const data = await getStats();
+      if (data) setStats(data);
+    } catch {
+      // Silently fail if endpoint is not reachable
+    }
+  }, []);
+
   useEffect(() => {
     if (!isAuthenticated) return;
-    let mounted = true;
-    const fetchStats = async () => {
-      try {
-        const data = await getStats();
-        if (mounted && data) setStats(data);
-      } catch {
-        // Silently fail if endpoint is not reachable
-      }
-    };
     fetchStats();
-    return () => {
-      mounted = false;
-    };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchStats]);
 
   const handleBatchFilesReady = async (csvFile: File, zipFile: File) => {
     setUploading(true);
@@ -73,10 +76,8 @@ export default function DashboardPage() {
   };
 
   const handleBatchComplete = useCallback(() => {
-    getStats()
-      .then((data) => setStats(data))
-      .catch(() => {});
-  }, []);
+    fetchStats();
+  }, [fetchStats]);
 
   const handleNewBatch = () => {
     setView('upload');
@@ -91,7 +92,7 @@ export default function DashboardPage() {
 
   // ── Authenticated Registrar Dashboard ─────────
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="w-full max-w-5xl mx-auto space-y-8">
       {/* ── Dashboard Header ───────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border-main">
         <div>
@@ -109,7 +110,7 @@ export default function DashboardPage() {
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-content-secondary mt-1">
-            Issue and verify academic credentials on the permanent blockchain registry.
+            Issue, search, verify and audit academic credentials on the permanent blockchain registry.
           </p>
         </div>
 
@@ -127,45 +128,85 @@ export default function DashboardPage() {
 
       {/* ── Key Real Metric Cards ──────────────────── */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <motion.div
             whileHover={{ y: -2 }}
-            className="bg-surface-card border border-border-main rounded-2xl p-5 transition-all duration-200 flex items-center gap-4.5"
+            className="bg-surface-card border border-border-main rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between"
             style={{
               boxShadow: 'var(--shadow-card), var(--inset-card-highlight)',
             }}
           >
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-surface-teal-subtle to-surface-teal-subtle-hover text-teal-brand border border-teal-brand/25 flex items-center justify-center flex-shrink-0 shadow-xs">
-              <BarChart3 size={24} strokeWidth={2.2} />
-            </div>
-            <div>
-              <span className="block text-xs font-bold text-content-secondary uppercase tracking-wider">
-                Total Credentials Issued
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-content-secondary uppercase tracking-wider">
+                Total Issued
               </span>
-              <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-content-main mt-0.5 tracking-tight">
-                {stats.totalDegreesIssued.toLocaleString()}
-              </span>
+              <div className="w-8 h-8 rounded-xl bg-surface-teal-subtle text-teal-brand border border-teal-brand/20 flex items-center justify-center">
+                <BarChart3 size={16} strokeWidth={2.2} />
+              </div>
             </div>
+            <span className="text-2xl font-extrabold font-mono text-content-main tracking-tight">
+              {stats.totalDegreesIssued.toLocaleString()}
+            </span>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -2 }}
-            className="bg-surface-card border border-border-main rounded-2xl p-5 transition-all duration-200 flex items-center gap-4.5"
+            className="bg-surface-card border border-border-main rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between"
             style={{
               boxShadow: 'var(--shadow-card), var(--inset-card-highlight)',
             }}
           >
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-surface-blue-subtle to-surface-muted text-secondary-blue border border-secondary-blue/20 flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Building2 size={24} strokeWidth={2.2} />
-            </div>
-            <div>
-              <span className="block text-xs font-bold text-content-secondary uppercase tracking-wider">
-                Max Allowed Batch Size
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-content-secondary uppercase tracking-wider">
+                Active &amp; Valid
               </span>
-              <span className="block text-2xl sm:text-3xl font-extrabold font-mono text-content-main mt-0.5 tracking-tight">
-                {stats.maxBatchSize} <span className="text-xs font-sans font-normal text-content-muted">records/batch</span>
-              </span>
+              <div className="w-8 h-8 rounded-xl bg-status-verified-bg text-status-verified border border-status-verified-border flex items-center justify-center">
+                <CheckCircle2 size={16} strokeWidth={2.2} />
+              </div>
             </div>
+            <span className="text-2xl font-extrabold font-mono text-status-verified tracking-tight">
+              {(stats.activeDegrees ?? (stats.totalDegreesIssued - (stats.totalRevoked || 0))).toLocaleString()}
+            </span>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -2 }}
+            className="bg-surface-card border border-border-main rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between"
+            style={{
+              boxShadow: 'var(--shadow-card), var(--inset-card-highlight)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-content-secondary uppercase tracking-wider">
+                Revoked
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center">
+                <Ban size={16} strokeWidth={2.2} />
+              </div>
+            </div>
+            <span className={`text-2xl font-extrabold font-mono tracking-tight ${(stats.totalRevoked || 0) > 0 ? 'text-red-400' : 'text-content-muted'}`}>
+              {(stats.totalRevoked || 0).toLocaleString()}
+            </span>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ y: -2 }}
+            className="bg-surface-card border border-border-main rounded-2xl p-4 transition-all duration-200 flex flex-col justify-between"
+            style={{
+              boxShadow: 'var(--shadow-card), var(--inset-card-highlight)',
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-bold text-content-secondary uppercase tracking-wider">
+                Batch Capacity
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-surface-blue-subtle text-secondary-blue border border-secondary-blue/20 flex items-center justify-center">
+                <Building2 size={16} strokeWidth={2.2} />
+              </div>
+            </div>
+            <span className="text-2xl font-extrabold font-mono text-content-main tracking-tight">
+              {stats.maxBatchSize} <span className="text-xs font-sans font-normal text-content-muted">/batch</span>
+            </span>
           </motion.div>
         </div>
       )}
@@ -182,7 +223,7 @@ export default function DashboardPage() {
             className="space-y-6"
           >
             {/* ── Mode Selection Tabs ──────────────────── */}
-            <div className="flex p-1 rounded-xl bg-surface-muted/80 backdrop-blur-sm border border-border-main w-fit shadow-xs">
+            <div className="flex flex-wrap p-1 rounded-xl bg-surface-muted/80 backdrop-blur-sm border border-border-main w-fit shadow-xs gap-1">
               <button
                 type="button"
                 onClick={() => setIssueMode('single')}
@@ -216,61 +257,82 @@ export default function DashboardPage() {
                 <Layers size={15} />
                 <span>Batch Processing</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setIssueMode('ledger')}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold
+                  transition-all duration-200 cursor-pointer
+                  ${
+                    issueMode === 'ledger'
+                      ? 'bg-surface-card text-teal-brand shadow-xs border border-border-subtle'
+                      : 'text-content-secondary hover:text-content-main border border-transparent'
+                  }
+                `}
+              >
+                <Database size={15} />
+                <span>Degree Ledger &amp; Search</span>
+              </button>
             </div>
 
-            {/* ── Tab Content Card ─────────────────────── */}
-            <div
-              className="bg-surface-card border border-border-main rounded-2xl p-6 sm:p-8"
-              style={{
-                boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)',
-              }}
-            >
-              {issueMode === 'single' ? (
-                <div>
-                  <div className="flex items-center gap-3 pb-4 mb-6 border-b border-border-subtle">
-                    <div className="w-9 h-9 rounded-xl bg-surface-teal-subtle text-teal-brand border border-teal-brand/20 flex items-center justify-center shadow-xs">
-                      <FileText size={19} strokeWidth={2.2} />
+            {/* ── Tab Content ─────────────────────── */}
+            {issueMode === 'ledger' ? (
+              <DegreeLedger onRefreshStats={fetchStats} />
+            ) : (
+              <div
+                className="bg-surface-card border border-border-main rounded-2xl p-6 sm:p-8"
+                style={{
+                  boxShadow: 'var(--shadow-elevated), var(--inset-card-highlight)',
+                }}
+              >
+                {issueMode === 'single' ? (
+                  <div>
+                    <div className="flex items-center gap-3 pb-4 mb-6 border-b border-border-subtle">
+                      <div className="w-9 h-9 rounded-xl bg-surface-teal-subtle text-teal-brand border border-teal-brand/20 flex items-center justify-center shadow-xs">
+                        <FileText size={19} strokeWidth={2.2} />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-content-main">
+                          Individual Degree Issuance
+                        </h2>
+                        <p className="text-xs text-content-muted">
+                          Enter student details and upload the official PDF document
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-base font-bold text-content-main">
-                        Individual Degree Issuance
-                      </h2>
-                      <p className="text-xs text-content-muted">
-                        Enter student details and upload the official PDF document
-                      </p>
-                    </div>
+                    <SingleIssueForm />
                   </div>
-                  <SingleIssueForm />
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center gap-3 pb-4 mb-6 border-b border-border-subtle">
-                    <div className="w-9 h-9 rounded-xl bg-surface-blue-subtle text-secondary-blue border border-secondary-blue/20 flex items-center justify-center shadow-xs">
-                      <Layers size={19} strokeWidth={2.2} />
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-3 pb-4 mb-6 border-b border-border-subtle">
+                      <div className="w-9 h-9 rounded-xl bg-surface-blue-subtle text-secondary-blue border border-secondary-blue/20 flex items-center justify-center shadow-xs">
+                        <Layers size={19} strokeWidth={2.2} />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-content-main">
+                          Batch Degree Processing
+                        </h2>
+                        <p className="text-xs text-content-muted">
+                          Upload CSV records with corresponding ZIP archive of PDF certificates
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-base font-bold text-content-main">
-                        Batch Degree Processing
-                      </h2>
-                      <p className="text-xs text-content-muted">
-                        Upload CSV records with corresponding ZIP archive of PDF certificates
-                      </p>
-                    </div>
+
+                    <HolographicDropzone
+                      onFilesReady={handleBatchFilesReady}
+                      loading={uploading}
+                    />
+
+                    {uploadError && (
+                      <div className="mt-4 p-3.5 rounded-xl bg-status-error-bg border border-status-error-border text-status-error-text text-xs shadow-2xs">
+                        {uploadError}
+                      </div>
+                    )}
                   </div>
-
-                  <HolographicDropzone
-                    onFilesReady={handleBatchFilesReady}
-                    loading={uploading}
-                  />
-
-                  {uploadError && (
-                    <div className="mt-4 p-3.5 rounded-xl bg-status-error-bg border border-status-error-border text-status-error-text text-xs shadow-2xs">
-                      {uploadError}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
 

@@ -7,10 +7,11 @@ import ProcessingOverlay from '../components/verify/ProcessingOverlay';
 import AuthenticResult from '../components/verify/AuthenticResult';
 import TamperedResult from '../components/verify/TamperedResult';
 import NotFoundResult from '../components/verify/NotFoundResult';
+import RevokedResult from '../components/verify/RevokedResult';
 import HowItWorks from '../components/verify/HowItWorks';
 import { verifyDegree, VerifyDegreeResponse } from '../services/api';
 
-type VerifyState = 'idle' | 'processing' | 'authentic' | 'tampered' | 'not_found' | 'error';
+type VerifyState = 'idle' | 'processing' | 'authentic' | 'tampered' | 'not_found' | 'error' | 'revoked';
 
 export default function VerifyPage() {
   const [searchParams] = useSearchParams();
@@ -47,7 +48,9 @@ export default function VerifyPage() {
       const data = response as VerifyDegreeResponse;
       setResult(data);
 
-      if (data.authentic && !data.tampered) {
+      if (data.revoked || data.status === 'REVOKED') {
+        setState('revoked');
+      } else if (data.authentic && !data.tampered) {
         setState('authentic');
       } else if (data.tampered) {
         setState('tampered');
@@ -153,6 +156,20 @@ export default function VerifyPage() {
             className="w-full"
           >
             <AuthenticResult data={result} onReset={handleReset} />
+          </motion.div>
+        )}
+
+        {/* ═══════════════ REVOKED ═══════════════ */}
+        {state === 'revoked' && result && (
+          <motion.div
+            key="revoked"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="w-full"
+          >
+            <RevokedResult data={result} onReset={handleReset} />
           </motion.div>
         )}
 

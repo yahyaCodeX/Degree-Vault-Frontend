@@ -52,6 +52,30 @@ export interface VerifyDegreeResponse {
   integrityMessage: string;
   verificationUrl: string;      // https://yourdomain.com/verify?id=MUET-22CS001
   qrCodeBase64: string | null;  // Base64-encoded QR code PNG
+  revoked?: boolean;
+  revocationReason?: string;
+  revocationDate?: number;
+  revocationTxHash?: string;
+}
+
+/** Complete database record for the admin ledger */
+export interface DegreeRecord {
+  globalCredentialId: string;
+  universityCode: string;
+  rollNo: string;
+  studentId?: string;
+  studentName: string;
+  fatherName?: string;
+  department?: string;
+  cgpa: string;
+  dataHash: string;
+  ipfsCid: string;
+  issuerAddress: string;
+  issueDate: number;
+  revoked?: boolean;
+  revocationReason?: string;
+  revocationDate?: number;
+  revocationTxHash?: string;
 }
 
 /** Response returned by the single-degree issuance endpoint */
@@ -78,7 +102,30 @@ export const login = async (email: string, password: string) => {
 /** GET /api/v1/degrees/stats */
 export const getStats = async () => {
   const { data } = await api.get('/degrees/stats');
-  return data as { totalDegreesIssued: number; maxBatchSize: number };
+  return data as {
+    totalDegreesIssued: number;
+    maxBatchSize: number;
+    totalRevoked?: number;
+    activeDegrees?: number;
+  };
+};
+
+/** GET /api/v1/degrees/all — Fetch all issued degrees for the admin ledger */
+export const getAllDegrees = async (): Promise<DegreeRecord[]> => {
+  const { data } = await api.get('/degrees/all');
+  return data as DegreeRecord[];
+};
+
+/** GET /api/v1/degrees/search?q=... — Search degrees by query */
+export const searchDegrees = async (query: string): Promise<DegreeRecord[]> => {
+  const { data } = await api.get(`/degrees/search?q=${encodeURIComponent(query)}`);
+  return data as DegreeRecord[];
+};
+
+/** POST /api/v1/degrees/revoke — Revoke a degree on-chain */
+export const revokeDegree = async (globalCredentialId: string, reason: string) => {
+  const { data } = await api.post('/degrees/revoke', { globalCredentialId, reason });
+  return data as { transactionHash: string; status: string; message: string };
 };
 
 /**
