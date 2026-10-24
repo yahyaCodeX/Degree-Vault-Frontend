@@ -194,4 +194,11 @@ export const healthCheck = async () => {
   return data;
 };
 
+/** GET /api/v1/degrees/student/{query} — fetch student credential by Roll No or GUCI */
+export const getStudentDegree = async (query: string): Promise<VerifyDegreeResponse> => {
+  const { data } = await api.get(`/degrees/student/${encodeURIComponent(query.trim())}`);
+  return data;
+};
+
 export default api;
+

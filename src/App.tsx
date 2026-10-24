@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import VerifyPage from './pages/VerifyPage';
 import DashboardPage from './pages/DashboardPage';
+import StudentPortalPage from './pages/StudentPortalPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<VerifyPage />} />
                 <Route path="/verify" element={<VerifyPage />} />
+                <Route path="/student" element={<StudentPortalPage />} />
                 <Route path="/admin" element={<DashboardPage />} />
               </Route>
             </Routes>
