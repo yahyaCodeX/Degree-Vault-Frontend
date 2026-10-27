@@ -75,7 +75,7 @@ export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
                   : 'text-content-secondary hover:text-content-main border border-transparent'}`}
             >
               <Hash size={13} />
-              <span>Paste GUCI directly</span>
+              <span>Paste Credential ID</span>
             </button>
           </div>
 
@@ -150,7 +150,7 @@ export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
             </div>
           )}
 
-          {/* ── DIRECT MODE: Paste GUCI ── */}
+          {/* ── DIRECT MODE: Paste Credential ID ── */}
           {mode === 'direct' && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -158,7 +158,7 @@ export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
                   htmlFor="verify-guci"
                   className="text-xs font-bold uppercase tracking-wider text-content-main"
                 >
-                  Global Credential ID (GUCI) <span className="text-teal-brand">*</span>
+                  Credential Verification ID <span className="text-teal-brand">*</span>
                 </label>
               </div>
               <div className="relative group">
@@ -170,7 +170,7 @@ export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
                   type="text"
                   value={guciManual}
                   onChange={(e) => setGuciManual(e.target.value)}
-                  placeholder="e.g. MUET-22CS001"
+                  placeholder="e.g. MUET-22CS100 or 22CS100"
                   disabled={loading}
                   aria-required="true"
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm font-mono tracking-wide uppercase
@@ -180,7 +180,7 @@ export default function VaultDoor({ onSubmit, loading }: VaultDoorProps) {
                 />
               </div>
               <p id="guci-help" className="text-[11px] text-content-muted mt-1.5">
-                Paste the GUCI from the QR code or the degree certificate. Format: UNIVERSITYCODE-ROLLNO
+                Enter the Credential ID or Roll Number found on the official degree certificate.
               </p>
             </div>
           )}

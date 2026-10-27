@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import Navbar from './Navbar';
+import VaultAIChatbot from '../common/VaultAIChatbot';
 
 export default function Layout() {
   return (
@@ -90,6 +91,9 @@ export default function Layout() {
           </div>
         </div>
       </footer>
+ 
+      {/* ── Global Floating VaultAI Assistant ──────────────── */}
+      <VaultAIChatbot />
     </div>
   );
 }

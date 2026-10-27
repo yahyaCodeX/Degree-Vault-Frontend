@@ -267,9 +267,29 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
             <p>Loading university degree records...</p>
           </div>
         ) : error ? (
-          <div className="p-8 text-center text-status-error text-xs">
-            <AlertTriangle size={22} className="mx-auto mb-2" />
-            <p>{error}</p>
+          <div className="p-8 text-center text-status-error text-xs space-y-3">
+            <AlertTriangle size={24} className="mx-auto" />
+            <p className="font-semibold">{error}</p>
+            {error.includes('403') || error.includes('Forbidden') ? (
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('dv_token');
+                  window.location.reload();
+                }}
+                className="px-3.5 py-1.5 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+              >
+                Sign In as Administrator Again
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={fetchRecords}
+                className="px-3 py-1 rounded-lg bg-surface-muted hover:bg-surface-card text-content-main border border-border-main text-xs font-semibold cursor-pointer"
+              >
+                Retry Loading
+              </button>
+            )}
           </div>
         ) : filteredRecords.length === 0 ? (
           <div className="p-12 text-center text-content-muted text-xs">
@@ -284,6 +304,7 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
                   <th className="py-3 px-4">Credential (GUCI)</th>
                   <th className="py-3 px-4">Student Details</th>
                   <th className="py-3 px-4">Department &amp; Roll No</th>
+                  <th className="py-3 px-4">Vault PIN</th>
                   <th className="py-3 px-4">CGPA</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
@@ -319,8 +340,13 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
                       {/* Student Details */}
                       <td className="py-3 px-4">
                         <span className="block font-bold text-content-main">{r.studentName}</span>
+                        {r.studentEmail && (
+                          <span className="block text-[11px] text-teal-brand font-mono">
+                            {r.studentEmail}
+                          </span>
+                        )}
                         {r.fatherName && r.fatherName !== 'N/A' && (
-                          <span className="block text-[11px] text-content-muted">
+                          <span className="block text-[10px] text-content-muted">
                             S/D/O {r.fatherName}
                           </span>
                         )}
@@ -334,6 +360,29 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
                         <span className="block text-[11px] text-content-muted font-mono">
                           Roll: {r.rollNo}
                         </span>
+                      </td>
+
+                      {/* Vault PIN */}
+                      <td className="py-3 px-4">
+                        {r.studentPin ? (
+                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle font-mono text-[11px] font-bold text-teal-brand">
+                            <span>{r.studentPin.startsWith('$2a$') ? '••••••' : r.studentPin}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(r.studentPin!, `pin-${r.globalCredentialId}`)}
+                              className="hover:opacity-75"
+                              title="Copy Confidential PIN"
+                            >
+                              {copiedId === `pin-${r.globalCredentialId}` ? (
+                                <Check size={11} className="text-status-verified" />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-content-muted text-[11px]">—</span>
+                        )}
                       </td>
 
                       {/* CGPA */}
@@ -364,6 +413,17 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Student Vault Direct Link */}
+                          <a
+                            href={`/student?id=${encodeURIComponent(r.globalCredentialId)}&pin=${r.studentPin || ''}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg bg-surface-muted hover:bg-surface-teal-subtle text-content-secondary hover:text-teal-brand transition-colors"
+                            title="Open Student Vault (with PIN)"
+                          >
+                            <GraduationCap size={14} />
+                          </a>
+
                           {/* Verify Link */}
                           <a
                             href={`/verify?id=${encodeURIComponent(r.globalCredentialId)}`}

@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
 import VerifyPage from './pages/VerifyPage';
 import DashboardPage from './pages/DashboardPage';
 import StudentPortalPage from './pages/StudentPortalPage';
@@ -15,7 +16,7 @@ export default function App() {
           <AnimatePresence mode="wait">
             <Routes>
               <Route element={<Layout />}>
-                <Route path="/" element={<VerifyPage />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/verify" element={<VerifyPage />} />
                 <Route path="/student" element={<StudentPortalPage />} />
                 <Route path="/admin" element={<DashboardPage />} />

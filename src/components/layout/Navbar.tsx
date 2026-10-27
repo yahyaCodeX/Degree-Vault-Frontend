@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldCheck, FileCheck2, LayoutDashboard, GraduationCap, Menu, X } from 'lucide-react';
+import { ShieldCheck, FileCheck2, LayoutDashboard, GraduationCap, Menu, X, Home } from 'lucide-react';
 import ThemeSwitcher from '../common/ThemeSwitcher';
 import { getStats } from '../../services/api';
 
@@ -32,12 +32,13 @@ export default function Navbar() {
   }, []);
 
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/' || location.pathname === '/verify';
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
   const navLinks = [
-    { to: '/', label: 'Verify Degree', icon: <FileCheck2 size={16} /> },
+    { to: '/', label: 'Home', icon: <Home size={16} /> },
+    { to: '/verify', label: 'Verify Credential', icon: <FileCheck2 size={16} /> },
     { to: '/student', label: 'Student Vault', icon: <GraduationCap size={16} /> },
     { to: '/admin', label: 'Admin Portal', icon: <LayoutDashboard size={16} /> },
   ];

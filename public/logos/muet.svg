@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="muet-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="muet-navy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Ring with Cog Teeth for Engineering -->
+  <circle cx="60" cy="60" r="56" fill="url(#muet-navy)" stroke="url(#muet-gold)" stroke-width="3" filter="url(#shadow)" />
+  <circle cx="60" cy="60" r="48" fill="none" stroke="url(#muet-gold)" stroke-width="1.2" stroke-dasharray="3 2" />
+
+  <!-- Inner Crest Shield -->
+  <path d="M40 38 Q60 32 80 38 Q80 68 60 84 Q40 68 40 38 Z" fill="#FFFFFF" stroke="url(#muet-gold)" stroke-width="2" />
+
+  <!-- Gear & Atom/Compass Motif inside Shield -->
+  <circle cx="60" cy="54" r="14" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" />
+  
+  <!-- Gear Teeth -->
+  <g fill="#D97706">
+    <rect x="58" y="37" width="4" height="5" rx="1" />
+    <rect x="58" y="66" width="4" height="5" rx="1" />
+    <rect x="43" y="52" width="5" height="4" rx="1" />
+    <rect x="72" y="52" width="5" height="4" rx="1" />
+  </g>
+
+  <!-- Open Book of Knowledge -->
+  <path d="M50 54 Q60 51 60 57 Q60 51 70 54 L70 62 Q60 59 60 65 Q60 59 50 62 Z" fill="#1E3A8A" />
+  <circle cx="60" cy="49" r="2.5" fill="#D97706" />
+
+  <!-- Heraldic Ribbon Banner at Bottom -->
+  <path d="M25 86 L35 80 L85 80 L95 86 L85 92 L35 92 Z" fill="url(#muet-gold)" stroke="#78350F" stroke-width="1" />
+  <text x="60" y="89" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="7.5" fill="#1E3A8A" text-anchor="middle" letter-spacing="1">MUET</text>
+
+  <!-- Top Curved Label -->
+  <path id="curve-muet" d="M 28 42 A 40 40 0 0 1 92 42" fill="none" />
+  <text font-family="Arial, sans-serif" font-size="5.5" font-weight="bold" fill="#FDE68A" letter-spacing="0.8">
+    <textPath href="#curve-muet" startOffset="50%" text-anchor="middle">MEHRAN UNIVERSITY</textPath>
+  </text>
+</svg>

@@ -5,22 +5,22 @@ export default function HowItWorks() {
   const steps = [
     {
       number: '01',
-      title: 'Enter University Code & Roll Number',
-      description: "Provide the issuing university's short code (e.g. MUET, NUST) and the student roll number. No document upload needed.",
+      title: 'Enter University & Roll Number',
+      description: "Select the issuing university and enter the student's roll number, or simply scan the QR code from their degree.",
       icon: <Building2 size={20} className="text-teal-brand" strokeWidth={2.2} />,
       color: 'from-teal-brand/15 to-secondary-blue/10',
     },
     {
       number: '02',
-      title: 'On-chain hash recomputation',
-      description: 'The system recomputes the deterministic SHA-256 credential hash from on-chain fields and compares it with the registered record.',
+      title: 'Official Registry Match',
+      description: "The system cross-references the student's record directly against the university's permanent digital academic ledger.",
       icon: <Cpu size={20} className="text-secondary-blue" strokeWidth={2.2} />,
       color: 'from-secondary-blue/15 to-teal-brand/10',
     },
     {
       number: '03',
-      title: 'View verification result',
-      description: 'Instantly see whether the credential is authentic, tampered, or unregistered — backed by the immutable blockchain registry.',
+      title: 'Instant Verified Result',
+      description: 'Immediately view official confirmation of authenticity, conferred degree title, graduation date, and honors standing.',
       icon: <CheckCircle size={20} className="text-status-verified" strokeWidth={2.2} />,
       color: 'from-status-verified/15 to-teal-brand/10',
     },

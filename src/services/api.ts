@@ -16,11 +16,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Response interceptor — handle 401 globally ──────────────────────────────
+// ── Response interceptor — handle 401 & 403 globally ─────────────────────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('dv_token');
     }
     return Promise.reject(error);
@@ -56,6 +56,8 @@ export interface VerifyDegreeResponse {
   revocationReason?: string;
   revocationDate?: number;
   revocationTxHash?: string;
+  studentEmail?: string;
+  studentPin?: string;
 }
 
 /** Complete database record for the admin ledger */
@@ -76,6 +78,8 @@ export interface DegreeRecord {
   revocationReason?: string;
   revocationDate?: number;
   revocationTxHash?: string;
+  studentEmail?: string;
+  studentPin?: string;
 }
 
 /** Response returned by the single-degree issuance endpoint */
@@ -194,10 +198,27 @@ export const healthCheck = async () => {
   return data;
 };
 
+export interface StudentLoginResponse {
+  token: string;
+  tokenType: string;
+  expiresIn: number;
+  role: string;
+  degree: VerifyDegreeResponse;
+}
+
 /** GET /api/v1/degrees/student/{query} — fetch student credential by Roll No or GUCI */
 export const getStudentDegree = async (query: string): Promise<VerifyDegreeResponse> => {
   const { data } = await api.get(`/degrees/student/${encodeURIComponent(query.trim())}`);
   return data;
+};
+
+/** POST /api/v1/degrees/student/login — Enterprise PIN-protected login returning Student JWT */
+export const studentLogin = async (identifier: string, pin: string): Promise<StudentLoginResponse> => {
+  const { data } = await api.post('/degrees/student/login', { identifier, pin });
+  if (data?.token) {
+    sessionStorage.setItem('dv_student_token', data.token);
+  }
+  return data as StudentLoginResponse;
 };
 
 export default api;
