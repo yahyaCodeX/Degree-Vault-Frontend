@@ -277,7 +277,7 @@ export default function DegreeLedger({ onRefreshStats }: DegreeLedgerProps) {
                   localStorage.removeItem('dv_token');
                   window.location.reload();
                 }}
-                className="px-3.5 py-1.5 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-white font-bold text-xs transition-all cursor-pointer shadow-xs"
+                className="px-3.5 py-1.5 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-content-inverse font-bold text-xs transition-all cursor-pointer shadow-xs"
               >
                 Sign In as Administrator Again
               </button>

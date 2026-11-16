@@ -15,11 +15,6 @@ export default function LoginGate() {
     await login(email.trim(), password);
   };
 
-  const handleFillDemoAdmin = () => {
-    setEmail('admin@muet.edu.pk');
-    setPassword('admin123');
-  };
-
   return (
     <div className="flex items-center justify-center min-h-[75vh] px-4 py-8">
       <motion.div
@@ -37,26 +32,13 @@ export default function LoginGate() {
         <div className="bg-surface-card border border-border-main rounded-3xl p-7 sm:p-9 shadow-elevated relative z-10">
           {/* Header */}
           <div className="text-center mb-7">
-            <h1 className="text-2xl font-black text-content-main tracking-tight">
-              Registrar Administration
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-teal-brand">Registrar access</p>
+            <h1 className="font-display text-4xl font-semibold text-content-main tracking-tight mt-3">
+              Issue &amp; manage <em className="italic text-teal-brand">degrees.</em>
             </h1>
             <p className="text-xs text-content-secondary mt-1.5 max-w-xs mx-auto leading-relaxed">
               Authorized sign-in for university registrars, credential issuing officers, and ledger auditors.
             </p>
-          </div>
-
-          {/* Quick Demo Credentials Autofill Pill */}
-          <div className="mb-5 p-2.5 rounded-xl bg-surface-muted/60 border border-border-subtle flex items-center justify-between gap-3 text-xs">
-            <span className="text-content-secondary text-[11px] truncate">
-              Testing? Demo Admin: <strong className="text-content-main">admin@muet.edu.pk</strong>
-            </span>
-            <button
-              type="button"
-              onClick={handleFillDemoAdmin}
-              className="px-2.5 py-1 rounded-lg bg-teal-brand/10 hover:bg-teal-brand/20 text-teal-brand text-[11px] font-bold transition-colors cursor-pointer shrink-0"
-            >
-              Auto-fill
-            </button>
           </div>
 
           {/* Form */}
@@ -139,7 +121,7 @@ export default function LoginGate() {
               <button
                 type="submit"
                 disabled={loading || !email.trim() || !password.trim()}
-                className="w-full h-11 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-button-primary hover:shadow-button-primary-hover transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                className="w-full h-11 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-content-inverse font-bold text-sm flex items-center justify-center gap-2 shadow-button-primary hover:shadow-button-primary-hover transition-all duration-200 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

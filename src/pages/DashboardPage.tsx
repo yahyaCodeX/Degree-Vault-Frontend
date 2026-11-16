@@ -103,11 +103,8 @@ export default function DashboardPage() {
             <span className="text-xs text-content-muted">•</span>
             <span className="text-xs text-content-secondary font-medium">Session Active</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-content-main tracking-tight">
-            Credential{' '}
-            <span className="bg-gradient-to-r from-teal-brand via-teal-brand-light to-secondary-blue bg-clip-text text-transparent">
-              Management
-            </span>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold text-content-main tracking-tight">
+            Registrar <em className="italic text-teal-brand">desk.</em>
           </h1>
           <p className="text-xs sm:text-sm text-content-secondary mt-1">
             Issue, search, verify and audit academic credentials on the permanent blockchain registry.

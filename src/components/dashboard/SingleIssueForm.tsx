@@ -28,6 +28,7 @@ interface FormData {
   fatherName: string;
   department: string;
   cgpa: string;
+  studentEmail: string;
 }
 
 const INITIAL_FORM: FormData = {
@@ -37,6 +38,7 @@ const INITIAL_FORM: FormData = {
   fatherName: '',
   department: '',
   cgpa: '',
+  studentEmail: '',
 };
 
 export default function SingleIssueForm() {
@@ -77,6 +79,7 @@ export default function SingleIssueForm() {
     form.fatherName.trim() &&
     form.department.trim() &&
     form.cgpa.trim() &&
+    form.studentEmail.trim() &&
     file !== null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,6 +98,7 @@ export default function SingleIssueForm() {
         fatherName: form.fatherName.trim(),
         department: form.department.trim(),
         cgpa: form.cgpa.trim(),
+        studentEmail: form.studentEmail.trim(),
       });
       setResult(response);
     } catch (err: any) {
@@ -404,6 +408,30 @@ export default function SingleIssueForm() {
               focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
               disabled:opacity-50 transition-all duration-150 outline-none shadow-xs"
           />
+        </div>
+
+        {/* Student Email */}
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="issue-email"
+            className="block text-xs font-bold uppercase tracking-wider text-content-main mb-1.5"
+          >
+            Student Email <span className="text-teal-brand">*</span>
+          </label>
+          <input
+            id="issue-email"
+            type="email"
+            value={form.studentEmail}
+            onChange={(e) => updateField('studentEmail', e.target.value)}
+            placeholder="e.g. student@gmail.com"
+            disabled={loading}
+            required
+            className="w-full px-3.5 py-2.5 rounded-xl text-sm
+              bg-surface-page/70 border border-border-main text-content-main placeholder:text-content-muted/70
+              focus-visible:ring-2 focus-visible:ring-teal-brand focus-visible:border-teal-brand focus-visible:bg-surface-card
+              disabled:opacity-50 transition-all duration-150 outline-none shadow-xs"
+          />
+          <p className="text-xs text-content-muted mt-1">The student's vault PIN is sent here after issuance.</p>
         </div>
 
         {/* CGPA */}

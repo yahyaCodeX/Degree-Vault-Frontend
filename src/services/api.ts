@@ -167,6 +167,7 @@ export const issueSingleDegree = async (
     fatherName: string;
     department: string;
     cgpa: string;
+    studentEmail: string;
   }
 ): Promise<IssueTransactionResponse> => {
   const formData = new FormData();

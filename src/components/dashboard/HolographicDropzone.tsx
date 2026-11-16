@@ -89,6 +89,7 @@ export default function HolographicDropzone({
 
         <p className="text-xs text-content-secondary mt-1 max-w-sm mx-auto">
           Requires one metadata CSV spreadsheet and one compressed ZIP archive containing student PDF certificates.
+          Add a <code className="font-mono">studentEmail</code> column at the end of the CSV to email each student their PIN.
         </p>
       </div>
 
