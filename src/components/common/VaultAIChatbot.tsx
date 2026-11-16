@@ -121,6 +121,16 @@ export default function VaultAIChatbot() {
                 statusBadge: 'revoked',
               };
               setMessages((prev) => [...prev, aiMsg]);
+            } else if (!result.authentic) {
+              // TAMPERED / INCOMPLETE: the record exists on-chain but its details could not be proven.
+              const aiMsg: ChatMessage = {
+                id: `ai-${Date.now()}`,
+                sender: 'ai',
+                text: `⚠️ **Verification Warning**: A credential for **${credentialTarget}** exists on the blockchain ledger, but its details **could not be proven authentic**.\n\n${result.integrityMessage || 'The stored record does not match the official blockchain anchor.'}\n\nDo not accept this degree until the issuing university confirms it.`,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                statusBadge: 'error',
+              };
+              setMessages((prev) => [...prev, aiMsg]);
             } else {
               const aiMsg: ChatMessage = {
                 id: `ai-${Date.now()}`,
@@ -313,7 +323,7 @@ export default function VaultAIChatbot() {
                     <div
                       className={`max-w-[85%] rounded-2xl px-4 py-3 leading-relaxed whitespace-pre-wrap break-words ${
                         isUser
-                          ? 'bg-teal-brand text-white font-medium rounded-tr-xs shadow-xs'
+                          ? 'bg-teal-brand text-content-inverse font-medium rounded-tr-xs shadow-xs'
                           : 'bg-surface-page/90 text-content-main border border-border-main rounded-tl-xs shadow-2xs'
                       }`}
                     >
@@ -442,7 +452,7 @@ export default function VaultAIChatbot() {
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="w-10 h-10 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-white flex items-center justify-center transition-all disabled:opacity-40 cursor-pointer shrink-0 shadow-button-primary hover:shadow-button-primary-hover"
+                className="w-10 h-10 rounded-xl bg-teal-brand hover:bg-teal-brand/90 text-content-inverse flex items-center justify-center transition-all disabled:opacity-40 cursor-pointer shrink-0 shadow-button-primary hover:shadow-button-primary-hover"
                 aria-label="Send message"
               >
                 <Send size={15} />
