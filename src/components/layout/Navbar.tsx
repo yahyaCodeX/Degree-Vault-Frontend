@@ -44,7 +44,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-3 z-50 px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto transition-all duration-300">
+    <header className="print:hidden sticky top-3 z-50 px-4 sm:px-6 lg:px-8 w-full max-w-6xl mx-auto transition-all duration-300">
       <div className="rounded-2xl bg-surface-card/85 backdrop-blur-xl border border-border-main shadow-card transition-colors duration-300 px-4 sm:px-6 py-2.5">
         <div className="flex items-center justify-between h-12">
           {/* ── Brand Logo ─────────────────────────────────── */}

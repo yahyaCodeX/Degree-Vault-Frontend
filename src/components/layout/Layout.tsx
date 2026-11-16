@@ -9,7 +9,7 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col bg-surface-page text-content-main transition-colors duration-300 relative overflow-hidden">
       {/* ── Background Layer 1 & 2: Atmospheric Lighting Meshes ── */}
       <div
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden print:hidden"
         aria-hidden="true"
       >
         {/* Top-center ambient teal glow */}
@@ -65,7 +65,7 @@ export default function Layout() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="flex-1 py-10 px-4 sm:px-6 lg:px-8 relative z-10"
+        className="flex-1 py-10 px-4 sm:px-6 lg:px-8 relative z-10 print:p-0"
       >
         <div className="mx-auto max-w-6xl">
           <Outlet />
@@ -73,7 +73,7 @@ export default function Layout() {
       </motion.main>
 
       {/* ── Trust-Centered Footer ──────────────────────────── */}
-      <footer className="border-t border-border-main bg-surface-card/80 backdrop-blur-md py-8 px-4 sm:px-6 lg:px-8 mt-auto relative z-10 transition-colors duration-200">
+      <footer className="print:hidden border-t border-border-main bg-surface-card/80 backdrop-blur-md py-8 px-4 sm:px-6 lg:px-8 mt-auto relative z-10 transition-colors duration-200">
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-content-secondary">
           <div className="flex items-center gap-2.5">
             <div className="w-6 h-6 rounded-lg bg-surface-teal-subtle text-teal-brand flex items-center justify-center border border-teal-brand/20 shadow-xs">
