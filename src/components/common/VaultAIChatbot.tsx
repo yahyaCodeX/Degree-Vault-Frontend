@@ -328,9 +328,8 @@ export default function VaultAIChatbot() {
                       }`}
                     >
                       {/* Render formatted message text */}
-                      <div className="prose prose-xs dark:prose-invert max-w-none">
-                        {msg.text}
-                      </div>
+                      <FormattedText text={msg.text} />
+
 
                       {/* Interactive Embedded Degree Result Card */}
                       {msg.degreeCard && (
@@ -463,4 +462,61 @@ export default function VaultAIChatbot() {
       </AnimatePresence>
     </>
   );
+}
+
+/**
+ * Renders the light markdown used in chatbot replies (**bold**, *italic*,
+ * `code` and "- " bullet lines) as React elements, never as raw HTML.
+ */
+function FormattedText({ text }: { text: string }) {
+  const lines = text.split('\n');
+  const blocks: React.ReactNode[] = [];
+  let bullets: string[] = [];
+
+  const flushBullets = () => {
+    if (bullets.length === 0) return;
+    blocks.push(
+      <ul key={`ul-${blocks.length}`} className="space-y-1 my-1">
+        {bullets.map((item, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="text-teal-brand select-none" aria-hidden="true">•</span>
+            <span className="min-w-0">{formatInline(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    bullets = [];
+  };
+
+  lines.forEach((line, i) => {
+    const bullet = line.match(/^\s*[-*]\s+(.*)$/);
+    if (bullet) {
+      bullets.push(bullet[1]);
+      return;
+    }
+    flushBullets();
+    blocks.push(
+      line.trim() === ''
+        ? <div key={`gap-${i}`} className="h-2" aria-hidden="true" />
+        : <p key={`p-${i}`}>{formatInline(line)}</p>
+    );
+  });
+  flushBullets();
+
+  return <div className="whitespace-normal">{blocks}</div>;
+}
+
+function formatInline(line: string): React.ReactNode[] {
+  return line.split(/(\*\*[^*]+\*\*|\*[^*\s][^*]*\*|`[^`]+`)/g).map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+      return <code key={i} className="font-mono text-[0.9em] px-1 py-0.5 rounded bg-surface-muted">{part.slice(1, -1)}</code>;
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    }
+    return part;
+  });
 }
