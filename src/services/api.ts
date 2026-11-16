@@ -36,13 +36,13 @@ export interface VerifyDegreeResponse {
   globalCredentialId: string;   // e.g. "MUET-22CS001"
   universityCode: string;       // e.g. "MUET"
   rollNo: string;               // e.g. "22CS001"
-  status: string;               // VERIFIED | TAMPERED | NOT_FOUND | ERROR
+  status: string;               // VERIFIED | TAMPERED | INCOMPLETE | REVOKED | NOT_FOUND | ERROR
   message: string;
   studentName: string;
   fatherName: string;
   department: string;
   cgpa: string;
-  dataHash: string;             // SHA-256 of (rollNo|studentName|cgpa|universityCode)
+  dataHash: string;             // SHA-256 of DV2|uni|roll|name|father|dept|cgpa|fileHash (see CredentialHashUtil)
   ipfsCid: string;
   issuerAddress: string;
   issueDate: number;            // Unix epoch seconds
@@ -50,6 +50,9 @@ export interface VerifyDegreeResponse {
   authentic: boolean;
   tampered: boolean;
   integrityMessage: string;
+  hashScheme?: 'v2' | 'legacy' | null;
+  fileHashMatch?: boolean | null;   // null when no file uploaded / no fingerprint on record
+  fileIntegrityMessage?: string | null;
   verificationUrl: string;      // https://yourdomain.com/verify?id=MUET-22CS001
   qrCodeBase64: string | null;  // Base64-encoded QR code PNG
   revoked?: boolean;
