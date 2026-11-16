@@ -48,10 +48,12 @@ export default function NotFoundResult({
             )}
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-content-main mb-2 tracking-tight">
-            {isNetworkIssue
-              ? 'Verification Service Unavailable'
-              : 'Degree Record Not Found'}
+          <h2 className="font-display text-3xl sm:text-4xl font-semibold text-content-main mb-3 tracking-tight">
+            {isNetworkIssue ? (
+              <>Verification is <em className="italic text-status-pending">offline.</em></>
+            ) : (
+              <>No degree <em className="italic text-status-pending">found.</em></>
+            )}
           </h2>
 
           <p className="text-xs sm:text-sm text-content-secondary max-w-lg mx-auto leading-relaxed">

@@ -39,10 +39,10 @@ export default function VerifyPage() {
     setErrorMessage('');
 
     try {
-      // Minimum 1.2 s loading animation for better UX
+      // Long enough for ProcessingOverlay's three steps (3 × 500 ms) to tick off
       const [response] = await Promise.all([
         verifyDegree(globalCredentialId),
-        new Promise((resolve) => setTimeout(resolve, 1200)),
+        new Promise((resolve) => setTimeout(resolve, 1900)),
       ]);
 
       const data = response as VerifyDegreeResponse;
@@ -52,7 +52,7 @@ export default function VerifyPage() {
         setState('revoked');
       } else if (data.authentic && !data.tampered) {
         setState('authentic');
-      } else if (data.tampered) {
+      } else if (data.tampered || data.status === 'INCOMPLETE') {
         setState('tampered');
       } else if (data.status === 'NOT_FOUND') {
         setState('not_found');
@@ -96,30 +96,19 @@ export default function VerifyPage() {
                 aria-hidden="true"
               />
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-card border border-teal-brand/25 text-teal-brand text-xs font-semibold mb-5 shadow-sm"
-              >
-                <div className="w-4 h-4 rounded-full bg-surface-teal-subtle flex items-center justify-center text-teal-brand">
-                  <ShieldCheck size={12} strokeWidth={2.5} />
-                </div>
-                <span>Immutable Digital Trust</span>
-                <span className="w-1 h-1 rounded-full bg-content-muted" />
-                <span className="text-content-secondary font-medium">Ethereum &amp; IPFS</span>
-              </motion.div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-teal-brand">
+                <ShieldCheck size={14} /> Public verification
+              </p>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold text-content-main tracking-tight leading-[1.12]">
-                Verify Degree{' '}
-                <span className="bg-gradient-to-r from-teal-brand via-teal-brand-light to-secondary-blue bg-clip-text text-transparent">
-                  Authenticity
-                </span>
+              <h1 className="font-display text-4xl sm:text-6xl font-semibold text-content-main tracking-tight leading-[1.05] mt-4">
+                Check any degree
+                <br />
+                <em className="italic text-teal-brand">in seconds.</em>
               </h1>
 
-              <p className="text-sm sm:text-base text-content-secondary mt-3.5 leading-relaxed max-w-lg mx-auto">
-                Enter the University Code and Roll Number to instantly verify a credential
-                against the permanent blockchain registry. No document upload required.
+              <p className="text-sm sm:text-base text-content-secondary mt-4 leading-relaxed max-w-lg mx-auto">
+                Enter the university and roll number, or paste the credential ID from a QR code.
+                The record is checked live against the blockchain. No upload, no sign-up.
               </p>
             </div>
 
@@ -184,8 +173,9 @@ export default function VerifyPage() {
             className="w-full"
           >
             <TamperedResult
+              data={result}
               message={result?.integrityMessage || result?.message || ''}
-              guci={currentGuci}
+              guci={result?.globalCredentialId || currentGuci}
               onReset={handleReset}
             />
           </motion.div>

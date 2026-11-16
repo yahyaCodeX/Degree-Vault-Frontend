@@ -20,7 +20,7 @@ export default function HowItWorks() {
     {
       number: '03',
       title: 'Instant Verified Result',
-      description: 'Immediately view official confirmation of authenticity, conferred degree title, graduation date, and honors standing.',
+      description: 'See instantly whether the degree is authentic, tampered with, or revoked, with the details the university recorded.',
       icon: <CheckCircle size={20} className="text-status-verified" strokeWidth={2.2} />,
       color: 'from-status-verified/15 to-teal-brand/10',
     },
@@ -29,7 +29,7 @@ export default function HowItWorks() {
   return (
     <section aria-labelledby="how-it-works-heading" className="w-full max-w-4xl mx-auto mt-20 pt-12 border-t border-border-main">
       <div className="text-center mb-10">
-        <h2 id="how-it-works-heading" className="text-2xl font-extrabold text-content-main tracking-tight">
+        <h2 id="how-it-works-heading" className="font-display text-3xl font-semibold text-content-main tracking-tight">
           How verification works
         </h2>
         <p className="text-xs sm:text-sm text-content-secondary mt-1.5 max-w-md mx-auto">

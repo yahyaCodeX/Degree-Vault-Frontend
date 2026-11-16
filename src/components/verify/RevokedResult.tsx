@@ -71,8 +71,8 @@ export default function RevokedResult({ data, onReset }: RevokedResultProps) {
             <Ban size={34} strokeWidth={2.4} />
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-content-main mb-2 tracking-tight">
-            Degree Officially Revoked
+          <h2 className="font-display text-3xl sm:text-4xl font-semibold text-content-main mb-3 tracking-tight">
+            This degree was <em className="italic text-status-error">revoked.</em>
           </h2>
 
           <p className="text-xs sm:text-sm text-content-secondary max-w-lg mx-auto leading-relaxed">
