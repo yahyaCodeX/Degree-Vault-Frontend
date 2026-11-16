@@ -25,7 +25,22 @@ dist-ssr
 
 # Markdown files
 *.md
+!README.md
 
 # Phase completion files
 *phase*
 *completion*
+
+# Environment files (keep .env.example)
+.env
+.env.*
+!.env.example
+
+# Build & tool caches
+*.tsbuildinfo
+.vite
+coverage
+
+# OS files
+Thumbs.db
+desktop.ini
